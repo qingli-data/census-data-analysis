@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart and Map Display</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Mapbox CSS -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css' rel='stylesheet' />
+    <!-- Mapbox JS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js'></script>
+    <script src="vendor/stickyfill.min.js"></script>
+    <script src="data/lga_geojson.js"></script>
+    <script src="data/lga_summary.js"></script>
+    <script src="data/house_price.js"></script>
+    <script src="data/income_2011.js"></script>
+    <script src="data/income_2016.js"></script>
+    <script src="data/income_2021.js"></script>
+    <script src="data/ocupations.js"></script>
+</head>
+
+<body>
+    <div class="row map-background" id="intro">
+        <div class="mask">
+            <div id="title" class="central centered">
+                <h1>Analysis of Income, occupation, and family composition in Victoria Australia</h1>
+                <p class="credit">Analysis by <a href="https://www.linkedin.com/in/qing-l-882644a7/"
+                        target="_blank">Qing Li</a>. </p>
+            </div>
+            <div class="central intro-text">
+                <p class="instructions">This interactive article explores the income and occupation distribution at LGA(Local Government Area) level in Victoria,
+                     Australia, based on census data from the past 15 years. It aims to narrate the evolving trends in this
+                      data over the years, shedding light on the changing dynamics. Additionally, the article delves into the 
+                      correlation between income and family composition, offering valuable insights into this relationship.</p>   
+                <p class="instructions">Scroll through the page to see how and why the map has changed.
+                    Skip to the end for the full interactive map.</p>
+                <p class="instructions">Data Source: Census data pack and shape files are from the Australian Bureau of Statistics.
+                    The house price data is from Department of Transport and Planning Victoria State Government.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="main">
+        <div class="small column" id="text-container">
+            <div id="text-mask-wrapper" class="sticky index0">
+                <div id="text-mask"></div>
+            </div>
+            <div class="index0" id='income_section'>
+                <div class="year-sticky sticky">
+                    <h2><span class="year-highlight">Income</span></h2>
+                </div>
+                <p id="income_section_whole" class="scrolltext index0">
+                    The map and barchart display rankings for each LGA based on their mean weekly income, with 1 indicating the highest
+                     income and 79 the lowest. It's evident that inner suburbs generally have higher ranks, while LGAs in the
+                      northwest tend to have lower ranks. You can hover over the bars in Figure 1 to highlight each LGA on the map.
+                </p>
+                <div id="hbar_chart" class='d3_chart'></div>
+                <p> Figure 1 Mean Family Weekly Income Of Each LGA</p>
+                <div id="income_section_inner_melbourne" class="scrolltext index0">
+                    <h2>Meltropolitan</h2>
+                    <p>
+                        All of the top 5 ranked LGAs in terms of weekly income are situated within the inner metropolitan area.
+                         You can hover over each row in Table 1 to locate them on the map.
+                    </p>
+                    <table id="table_top_rank_5_lga" class="table_font">
+                    </table>
+                    <p>Table 1 Top 5 Weekly Income Rank</p>
+                </div>
+                <div id="income_trend_section" class="scrolltext index0">
+                    <h2>Income Trend</h2>
+                    <p>
+                        The ranking of family weekly income has shifted across various Local Government Areas (LGAs),
+                        with a notable decline in the inner eastern and northern regions. In contrast, LGAs in the west
+                        have seen an improvement in their rankings. For instance, areas like Manningham and Whitehorse
+                        experienced a significant fall, whereas places such as Maribyrnong, Hobsons Bay, and Surf Coast
+                        are on the rise. Hover over figure 2 to see the locations on the map.
+                    </p>
+                    <div id="top_rank_change_chart" class='d3_chart'></div>
+                </div>
+                <div id="income_trend_slider_section" class="scrolltext index0">
+                    <div>
+                        <p>Figure 2 Top 20 Richest LGA Income Trend Over the years</p>
+                        <p>From the map to look at the rank change over years, it is noticeable outer west is getting
+                            lighter in color, which means the rank is increasing, while outer eastern is getting darker.
+                        </p>
+                    </div>
+                    <h2><span class="year-highlight" style="background-color: rgba(50, 59, 82, 0.88);"><label
+                                id="topmap-year">2011</label></span></h2>
+                    <p>
+                        In this section, the slider bar will automatically play from the year 2011 to 2021, allowing us
+                         to observe the changes over the years on the map. You can also manually adjust the slider to view
+                          specific years.</p>
+                    <input id="topmap_slider" autocomplete="off" class="slider" type="range" min="2011" max="2021"
+                        step="5" value="2011">
+                </div>
+            </div>
+            <div class="index1" id='ocupation_section'>
+                <div class="year-sticky sticky">
+                    <h2><span class="year-highlight">Occupation</span></h2>
+                </div>
+                <div id="ocupation_section_fishing" class="scrolltext index0">
+                    <p>
+                        Some interesting discoveries are found where certain occupations show a distinct concentration within a 
+                        handful of LGAs. We listed some of the findings below. </p>
+                    <h2>Agriculture Forestrt and Fishing</h2>
+                    <p>
+                        From the map, it is evident that individuals engaged in the Agriculture, Forestry, and Fishing
+                        industries tend to reside in proximity to seas or in rural areas abundant with forests. This
+                        geographic distribution is logical given the nature of their occupations, which are inextricably
+                        linked to the environment and its resources.
+
+                        The presence of agricultural workers in rural regions corresponds to the availability of open,
+                        arable land necessary for crop cultivation and livestock rearing. These expanses of cultivable
+                        land are the foundations upon which agricultural activities thrive, often far from urban centers
+                        where such large tracts of land would be unavailable or prohibitively expensive.
+                    </p>
+                </div>
+                <div id="ocupation_section_mining" class="scrolltext index0">
+                    <h2>Mining</h2>
+                    <p>
+                        The mining industry has unique residential patterns for its workforce, with a notable concentration
+                         around Central Goldfields Shire due to its rich history in the traditional gold mining sector. This 
+                         city, emblematic of the Australian gold rush era, has retained its relevance as a center for mining,
+                          with a community deeply connected to the heritage of the industry. Outside Central Goldfields Shire,
+                           mining professionals disperse into the outer eastern and western areas, where active mines exploit
+                            various minerals. These regions appeal to workers for their proximity to mining operations and the
+                             infrastructure built to support such industries.
+                    </p>
+                </div>
+                <div id="ocupation_section_manufacturing" class="scrolltext index0">
+                    <h2>Manufacturing</h2>
+                    <p>
+                        The manufacturing sector exerts a strong gravitational pull on its workforce towards the inner
+                        Local Government Areas (LGAs), with the City of Casey emerging as a particularly prominent hub.
+                        This predilection for inner LGAs is driven by the synergistic relationship between manufacturing
+                        facilities and the supportive urban infrastructure these regions offer. Casey stands out as a
+                        beacon of this trend, offering a blend of residential allure and industrial convenience that
+                        appeals to manufacturing workers. Its strategic location, enhanced by robust transport links and
+                        a diverse pool of amenities, positions it as an attractive destination for the manufacturing
+                        community. These workers benefit from reduced commute times, access to a broad range of
+                        services, and the opportunity to be part of a vibrant, closely-knit urban fabric.
+                    </p>
+                </div>
+                <div id="ocupation_section_information_technology" class="scrolltext index0">
+                    <h2>Information Media and Telecommunications</h2>
+                    <p>
+                        In the Information Media and Telecommunications sector, there's a notable trend of population
+                        shifts toward inner Local Government Areas (LGAs). These central regions attract a dense
+                        concentration of professionals due to the thriving ecosystem that supports the high-tech and
+                        fast-paced nature of this industry. The inner LGAs offer the cutting-edge infrastructure,
+                        networking opportunities, and proximity to a myriad of technological enterprises and start-ups,
+                        making them hotspots for innovation and collaboration in the field. This trend underscores the
+                        magnetic appeal of urban centers as pivotal grounds for the growth and dynamism of the
+                        Information Media and Telecommunications sector.
+                    </p>
+                </div>
+                <div id="ocupation_section_utility" class="scrolltext index0">
+                    <h2>Electricity Gas Water and Waste Services</h2>
+                    <p>
+                        In the utility sector, focusing on Electricity, Gas, Water, and Waste Services, certain areas distinguish 
+                        themselves by their concentration of industry professionals. In the west, Horsham and Gannawarra have become 
+                        synonymous with utility service provision, standing out as key hubs where expertise in these critical 
+                        infrastructures is centered. Similarly, to the east, Latrobe is notable for its significant utility workforce, 
+                        reflecting the strategic placement of these essential services. These localities underscore the importance of 
+                        regional specialization, with their skilled workers ensuring the smooth functioning of the utilities that underpin
+                         the region's quality of life and economic efficiency.
+                    </p>
+                </div>
+            </div>
+            <div class="index2" height="1000" id='family_section'>
+                <div class="year-sticky sticky">
+                    <h2><span class="year-highlight">Family</span></h2>
+                </div>
+                <div id="family_section_chart" class="scrolltext index0">
+                    <p>
+                        Rank LGAs by the income, From the figure, the percentage of couple with children families in
+                        richer areas generally are slightly higher than poorer areas, but percentage of single parent
+                        families are not very noticeable in four groups. The data cannot fully support the idea that
+                        richer area has a high proportion of families with children. New data needs to be added to do
+                        more research. It is also hard to say the financial responsibility brought by children make
+                        parents pursue money or richer parents tends to be more confident to have children.
+                    </p>
+                    <div id="family_stack_chart" class="d3_chart"></div>
+                </div>
+                <p>Figure 3 Family Normalized Stacked Bar Chart by Family Types</p>
+                <div id="family_couple_no_child" class="scrolltext index0">
+                    <h2>Couple Family no Child</h2>
+                    <p>
+                        Inner and Outer Local Government Areas (LGAs) tend to exhibit a higher prevalence of families
+                        without children. This demographic trend is particularly pronounced in certain regions, with
+                        West Wimmera standing out as the LGA with the most significant proportion of childless families.
+                        The reasons behind such patterns can be diverse and may include socioeconomic factors, lifestyle
+                        preferences, and population demographics. Urban centers, often characterized by Inner LGAs,
+                        typically attract younger professionals and couples who may opt to delay or forego childbearing
+                        for career or personal reasons. On the other hand, Outer LGAs, which can be either suburban or
+                        rural, might reflect a different aspect of the same phenomenon, with residents choosing smaller
+                        family units due to economic considerations or the pursuit of different lifestyles. West
+                        Wimmera's distinct position as the leader in this statistic could be the result of a unique
+                        combination of these factors, reflecting a broader social trend towards smaller family sizes in
+                        the region.
+                    </p>
+                </div>
+                <div id="family_couple_with_child" class="scrolltext index0">
+                    <h2>Couple Family with Child</h2>
+                    <p>
+                        Outer LGAs are characterized by a higher incidence of families with
+                        children, with the LGA of Pyrenees demonstrating the most significant proportion. This trend can
+                        be attributed to the appealing blend of affordability, open spaces, and community-oriented
+                        living that such areas offer, making them particularly attractive to those looking to nurture
+                        family life. Conversely, Inner LGAs show a contrasting demographic, with a smaller share of
+                        families with children. Urban centers that make up these Inner LGAs often feature dynamic
+                        lifestyles and higher living costs, factors which may influence couples to postpone or decide
+                        against having children. The bustling city life, with its career-centric ethos and compact
+                        living conditions, tends to attract individuals and couples prioritizing personal and
+                        professional growth over starting a family.
+                    </p>
+                </div>
+                <div id="family_one_parent" class="scrolltext index0">
+                    <h2>One Parent Family</h2>
+                    <p>
+                        The prevalence of single-parent families across various Local Government Areas (LGAs) appears to
+                        be evenly distributed, with no discernible pattern or trend that suggests a higher concentration
+                        in particular regions. This uniformity in the distribution could imply that the circumstances
+                        leading to single-parent family structures are common and widespread, cutting across the
+                        potential divides of geography, economy, and community resources. Factors such as relationship
+                        breakdowns, individual choices, or bereavement that result in one-parent families might be
+                        equally present in various localities. The lack of a distinct pattern may also reflect the
+                        universal challenges and supports that single parents face, regardless of where they reside
+                        within the LGAs. It highlights that single parenthood is a societal phenomenon not exclusive to
+                        any specific demographic or socioeconomic area.
+                    </p>
+                </div>
+                <div id="family_others" class="scrolltext index0">
+                    <h2>Other Family</h2>
+                    <p>
+                        In the South West Local Government Areas (LGAs), there's an observable trend toward a greater
+                        number of 'other family' types, which typically include non-traditional family units such as
+                        grandparent-led homes or households with non-related individuals. Hindmarsh distinguishes itself
+                        within this group by having the highest percentage of such family arrangements.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="large column" id="map-container">
+            <div class="sticky" id="topMap">
+                <div class="map_legend" id="top_map_legend"
+                    style="position: absolute; bottom: 0; right: 0; background: white; padding: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.2); z-index: 100;">
+                    <h4 class="legend_title" id="legend_title">Legend</h3>
+                    <div id="top_map_legend_content"></div>
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+    <div id="explore" class="row map-background">
+        <a name="explore"></a>
+        <div class="mask">
+            <div class="central">
+                <h5 class="centered">Explore the map yourself</h5>
+                <p> Approach 1: Begin by selecting the desired year using the slider bar. After selecting the year, 
+                    click on the map to choose a specific Local Government Area (LGA). This action will trigger the 
+                    display of three charts(Showing Melbourne as default). The sunburst chart will present the occupation 
+                    distribution, the line chart will visualize the ranks over the years, and the bar chart will show 
+                    the income range. As you hover over each chart and the map, you will receive more detailed information.
+                </p>
+                <p> Approach 2: Utilize the dropdown menu to color the map based on your chosen theme. This option allows 
+                    you to view the data in an overall context, and it is directly linked to the map, rather than the three charts.
+                </p>
+                <p>Note: The holes on the map are showing that areas are not included in our dataset. </p>
+                <p><a href="#" id="map-jump" class="jump"><i class="fas fa-chevron-down"></i></a></p>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="end-map">
+        <div class="map_legend" id="end_map_legend"
+            style="position: absolute; bottom: 0; right: 0; background: white; padding: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.2); z-index: 1;">
+            <h4 class="legend_title" id="end_legend_title">Legend</h4>
+            <div id="end_map_legend_content"></div>
+        </div>
+        <div id="console" class="console-open" style="z-index: 5;">
+            <div id="console-toggle">
+                <a href="#" class="toggle jump"><span class="arrow-right-hidden"><i
+                            class="fas fa-angle-right"></i></span><span class="arrow-left"><i
+                            class="fas fa-angle-left"></i></span></a>
+            </div>
+            <div class="session" id="sliderbar">
+                <div style="display:flex">
+                    <div>
+                        <h2><span class="year-highlight" style="background-color: rgba(50, 59, 82, 0.88);"><label
+                                    id="active-hour">2011</label></span></h2>
+                    </div>
+                    <div style="padding-left: 30px;padding-top:30px;">
+                        <p id="lga_name_panel" class="console-text">Melbourne</p>
+                    </div>
+                </div>
+                <input id="slider" autocomplete="off" class="slider" type="range" min="2011" max="2021" step="5"
+                    value="2011">
+
+            </div>
+            <div class="session" id="dropdown">
+                <h4>Coloring map by:</h4>
+                <select id="selectorType" class="selector">
+                    <option value="mean_income" selected="selected">Mean Income</option>
+                    <option value="population_count">Population Count</option>
+                    <option value="rank">Income Rank</option>
+                    <option value="Acom_food_scs">Accommodation and Food</option>
+                    <option value="Admin_sup_s">Administrative and Support Services</option>
+                    <option value="Agri_for_fish">Agriculture Forestry and Fishing</option>
+                    <option value="ArtRecreatTot">Arts and Recreation Services</option>
+                    <option value="Construction">Construction</option>
+                    <option value="Educ_training">Education and Training Occupation</option>
+                    <option value="El_Gas_W_W">Electricity Gas Water and Waste Services</option>
+                    <option value="Fin_and_ins_s">Financial and Insurance Services</option>
+                    <option value="Hlth_care_soc">Health Care and Social Assistance</option>
+                    <option value="ID_NS">Inadequately described Not stated</option>
+                    <option value="Infon_med_tel">Information Media and Telecommunications</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Mining">Mining</option>
+                    <option value="Other_scs">Other_Services</option>
+                    <option value="Prof_sci_tec">Professional Scientific and Technical Services</option>
+                    <option value="Pub_adm_sfty">Public Administration and Safety</option>
+                    <option value="Rent_hi_re_es">Rental Hiring and Real Estate Services</option>
+                    <option value="RetTde">Retail Trade</option>
+                    <option value="Trans_po_wh">Transport Postal and Warehousing</option>
+                    <option value="WhlesaleTde">Wholesale Trade</option>
+                    <option value="_cpl_fam_with_child">Couple Family with Child%</option>
+                    <option value="_cpl_fam_no_child">Couple Family no Child%</option>
+                    <option value="_One_parent_fam">One Parent Family%</option>
+                    <option value="_Other_fam">Other Family%</option>
+                </select>
+
+            </div>
+            <div class="session" id="charts">
+                <div class="d3_chart" id="ocupation_chart"></div>
+                <div class="d3_chart" id="rank_chart"></div>
+                <div class="d3_chart" id="bar_chart"></div>
+            </div>
+            <div id="d3_tooltip"></div>
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+    <script src="js/top-map.js"></script>
+    <script src="js/end-map.js"></script>
+    <script src="js/line-chart.js"></script>
+    <script src="js/bar-chart.js"></script>
+    <script src="js/pie-chart.js"></script>
+    <script src="js/hbar-chart.js"></script>
+    <script src="js/slope-chart.js"></script>
+    <script src="js/family-stacked-bar.js"></script>
+
+</body>
+
+</html>
